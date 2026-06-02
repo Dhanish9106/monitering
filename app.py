@@ -353,8 +353,12 @@ def admin():
         action = request.form.get("action")
         if action == "add_cam":
             name = request.form["name"].strip()
-            ip = request.form["ip"].strip()
-            url = f"http://{ip}:8080/video"
+            ip_or_url = request.form["ip"].strip()
+            # Support both IP and full URLs
+            if ip_or_url.startswith("http"):
+                url = ip_or_url
+            else:
+                url = f"http://{ip_or_url}:8080/video"
             with get_db() as con:
                 cur = con.execute("INSERT INTO cameras (name,url) VALUES (?,?)", (name, url))
                 cam_id = cur.lastrowid

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: personmonitor
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: gemini_key
+        sync: false
+    autoDeploy: true
