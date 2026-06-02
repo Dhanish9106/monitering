@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pt
+*.pth
+*.db
+recordings/
+.env
+.git/
+.gitignore
+*.md
