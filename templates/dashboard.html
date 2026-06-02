@@ -145,10 +145,12 @@
 </nav>
 
 <!-- ngrok public URL banner -->
-<div id="ngrok-banner" style="display:none; background:#f0fdf4; border-bottom:1px solid #bbf7d0; padding:0.5rem 2rem; font-size:0.82rem; color:#15803d; display:flex; align-items:center; gap:0.5rem;">
+<div id="ngrok-banner" style="display:none; background:#f0fdf4; border-bottom:1px solid #bbf7d0; padding:0.5rem 2rem; font-size:0.82rem; color:#15803d; align-items:center; gap:0.5rem;">
   <svg width="14" height="14" viewBox="0 0 24 24" fill="#15803d"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-  Public URL: <a id="ngrok-link" href="#" target="_blank" style="color:#15803d;font-weight:700;"></a>
-  <button onclick="copyNgrok()" style="margin-left:0.5rem;padding:0.2rem 0.6rem;border:1px solid #bbf7d0;border-radius:6px;background:#fff;color:#15803d;font-size:0.75rem;cursor:pointer;">Copy</button>
+  Public URL: <span id="ngrok-masked" style="font-weight:700;"></span>
+  <button onclick="toggleUrl()" style="padding:0.2rem 0.6rem;border:1px solid #bbf7d0;border-radius:6px;background:#fff;color:#15803d;font-size:0.75rem;cursor:pointer;">Show</button>
+  <button onclick="copyNgrok()" style="padding:0.2rem 0.6rem;border:1px solid #bbf7d0;border-radius:6px;background:#fff;color:#15803d;font-size:0.75rem;cursor:pointer;">Copy</button>
+  <a id="ngrok-link" href="#" target="_blank" style="display:none;"></a>
 </div>
 
 <div class="container">
@@ -340,19 +342,31 @@
   }
 
   // Fetch ngrok URL
+  let ngrokUrl = "";
+  let urlVisible = false;
+
   fetch("/ngrok-url").then(r => r.json()).then(data => {
     if (data.url) {
+      ngrokUrl = data.url;
       const banner = document.getElementById("ngrok-banner");
       const link = document.getElementById("ngrok-link");
       banner.style.display = "flex";
-      link.href = data.url;
-      link.textContent = data.url;
+      link.href = ngrokUrl;
+      link.textContent = ngrokUrl;
+      document.getElementById("ngrok-masked").textContent = "••••••••••••••••••••";
     }
   }).catch(() => {});
 
+  function toggleUrl() {
+    const masked = document.getElementById("ngrok-masked");
+    const btn = masked.nextElementSibling;
+    urlVisible = !urlVisible;
+    masked.textContent = urlVisible ? ngrokUrl : "••••••••••••••••••••";
+    btn.textContent = urlVisible ? "Hide" : "Show";
+  }
+
   function copyNgrok() {
-    const url = document.getElementById("ngrok-link").textContent;
-    navigator.clipboard.writeText(url);
+    if (ngrokUrl) navigator.clipboard.writeText(ngrokUrl);
   }
 
   async function sendAI() {
