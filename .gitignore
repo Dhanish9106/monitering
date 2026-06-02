@@ -17,6 +17,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# ngrok
+ngrok.exe
+
 # OS
 .DS_Store
 Thumbs.db

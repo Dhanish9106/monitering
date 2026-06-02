@@ -96,7 +96,7 @@ def camera_worker(cam_id, url, name):
     cap = cv2.VideoCapture(url)
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
-    state["buffer"] = deque(maxlen=20 * 30)  # 30s buffer at 20fps
+    state["buffer"] = deque(maxlen=20 * 30)
     last_annotated = None
     last_detections = []
     prev_details = ""
@@ -106,12 +106,14 @@ def camera_worker(cam_id, url, name):
         while state["active"]:
             raw = state.get("_raw_frame")
             if raw is None:
-                time.sleep(0.03)
+                time.sleep(0.05)
                 continue
+            # Clear so we don't re-process same frame
+            state["_raw_frame"] = None
             try:
                 results = model(raw, conf=0.4, iou=0.45, verbose=False)[0]
             except:
-                time.sleep(0.03)
+                time.sleep(0.05)
                 continue
             detections = []
             annotated = raw.copy()
@@ -146,6 +148,9 @@ def camera_worker(cam_id, url, name):
 
     threading.Thread(target=detect_loop, daemon=True).start()
 
+    detect_every = 5   # run detection every N frames only
+    frame_idx = 0
+
     while state["active"]:
         ret, frame = cap.read()
         if not ret:
@@ -156,17 +161,27 @@ def camera_worker(cam_id, url, name):
 
         ts = datetime.now()
         h, w = frame.shape[:2]
-        frame_resized = cv2.resize(frame, (640, int(h * 640 / w)))
+        # Keep resolution small for speed
+        frame_resized = cv2.resize(frame, (480, int(h * 480 / w)))
 
-        state["_raw_frame"] = frame_resized
         state["buffer"].append((ts, frame_resized.copy()))
 
-        display = (last_annotated if last_annotated is not None else frame_resized).copy()
+        # Only send every Nth frame to detector
+        frame_idx += 1
+        if frame_idx % detect_every == 0:
+            state["_raw_frame"] = frame_resized
 
-        cv2.putText(display, f"Objects: {len(last_detections)}", (10, 25),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
-        cv2.putText(display, f"Objects: {len(last_detections)}", (10, 25),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)
+        # Always show latest raw frame overlaid with last known annotations
+        display = frame_resized.copy()
+
+        # Re-draw last known boxes on current frame
+        if last_annotated is not None and last_annotated.shape == frame_resized.shape:
+            display = last_annotated.copy()
+        
+        # Overlay object count
+        label = f"Objects: {len(last_detections)}"
+        cv2.putText(display, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 0), 2)
+        cv2.putText(display, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 1)
 
         if state.get("recording"):
             fw = display.shape[1]
@@ -356,13 +371,35 @@ def video(cam_id):
             if frame is None:
                 time.sleep(0.03)
                 continue
-            _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 65])
             yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
                    + buf.tobytes() + b"\r\n")
+            time.sleep(0.033)
     resp = Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
     resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     resp.headers["Pragma"] = "no-cache"
-    resp.headers["X-Accel-Buffering"] = "no"  # disables nginx buffering on Render
+    resp.headers["X-Accel-Buffering"] = "no"
+    return resp
+
+
+@app.route("/frame/<int:cam_id>")
+@login_required
+def frame(cam_id):
+    """Single JPEG frame — browser polls this for smooth cloud streaming"""
+    state = cameras.get(cam_id)
+    if not state or state.get("frame") is None:
+        # Return a blank grey frame if not ready
+        blank = np.zeros((360, 480, 3), dtype=np.uint8)
+        blank[:] = (240, 240, 240)
+        cv2.putText(blank, "Connecting...", (140, 185),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (150, 150, 150), 2)
+        _, buf = cv2.imencode(".jpg", blank)
+    else:
+        _, buf = cv2.imencode(".jpg", state["frame"], [cv2.IMWRITE_JPEG_QUALITY, 70])
+    resp = Response(buf.tobytes(), mimetype="image/jpeg")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
     return resp
 
 
@@ -545,6 +582,18 @@ Answer concisely. For video clip requests tell user: /clip <cam_id> <YYYY-MM-DD 
 
 
 # ── SSE ───────────────────────────────────────────────────────────────────────
+@app.route("/ngrok-url")
+def ngrok_url():
+    try:
+        import urllib.request, json
+        res = urllib.request.urlopen("http://127.0.0.1:4040/api/tunnels", timeout=2)
+        data = json.loads(res.read())
+        url = data["tunnels"][0]["public_url"].replace("http://", "https://")
+        return jsonify({"url": url})
+    except:
+        return jsonify({"url": None})
+
+
 @app.route("/events")
 @login_required
 def events():
@@ -565,5 +614,19 @@ def events():
 if __name__ == "__main__":
     init_db()
     load_cameras_from_db()
+
+    # Auto-start ngrok using token from .env
+    ngrok_token = os.getenv("ngrock_key")
+    if ngrok_token:
+        try:
+            import subprocess
+            subprocess.Popen(
+                ["ngrok", "http", "--authtoken", ngrok_token, "5000"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+            print("ngrok tunnel starting... check http://127.0.0.1:4040")
+        except FileNotFoundError:
+            print("ngrok not found. Place ngrok.exe in the project folder or system PATH.")
+
     port = int(os.getenv("PORT", 5000))
     app.run(debug=False, threaded=True, host="0.0.0.0", port=port)

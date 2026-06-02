@@ -144,6 +144,13 @@
   </div>
 </nav>
 
+<!-- ngrok public URL banner -->
+<div id="ngrok-banner" style="display:none; background:#f0fdf4; border-bottom:1px solid #bbf7d0; padding:0.5rem 2rem; font-size:0.82rem; color:#15803d; display:flex; align-items:center; gap:0.5rem;">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="#15803d"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+  Public URL: <a id="ngrok-link" href="#" target="_blank" style="color:#15803d;font-weight:700;"></a>
+  <button onclick="copyNgrok()" style="margin-left:0.5rem;padding:0.2rem 0.6rem;border:1px solid #bbf7d0;border-radius:6px;background:#fff;color:#15803d;font-size:0.75rem;cursor:pointer;">Copy</button>
+</div>
+
 <div class="container">
   <div class="page-title">Live Dashboard</div>
   <div class="page-sub">Real-time multi-class detection with recording</div>
@@ -177,12 +184,10 @@
             <span class="cam-name">{{ cam.name }}</span>
             <span class="cam-count" id="count-{{ cam.id }}">0 objects</span>
           </div>
-          <img src="/video/{{ cam.id }}" alt="{{ cam.name }}"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
-          <div style="display:none; min-height:300px; align-items:center; justify-content:center; flex-direction:column; gap:0.5rem; color:#9ca3af; background:#f9fafb;">
+          <canvas id="canvas-{{ cam.id }}" style="width:100%;display:block;background:#f9fafb;min-height:300px;"></canvas>
+          <div id="offline-{{ cam.id }}" style="display:none; min-height:300px; align-items:center; justify-content:center; flex-direction:column; gap:0.5rem; color:#9ca3af; background:#f9fafb;">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="#d1d5db"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
             <span style="font-size:0.85rem;">Camera not reachable</span>
-            <span style="font-size:0.75rem;">Check if camera is on same network</span>
           </div>
           <div class="rec-controls">
             <button class="btn-rec" id="rec-{{ cam.id }}" onclick="toggleRecord({{ cam.id }})" title="Record">
@@ -250,21 +255,17 @@
   es.onmessage = e => {
     const [camId, details, time, name, recording] = e.data.split("|");
     const detailsArray = details.split(",").map(d => d.trim()).filter(d => d && d !== 'none');
-    
     const badge = document.getElementById(`count-${camId}`);
     if (badge) {
       badge.textContent = `${detailsArray.length} object${detailsArray.length !== 1 ? 's' : ''}`;
       badge.className = "cam-count" + (detailsArray.length > 0 ? " active" : "");
     }
-
-    // Update recording button state
     const recBtn = document.getElementById(`rec-${camId}`);
     if (recBtn) {
-      const isRec = recording === 'True' || recording === 'true';
+      const isRec = recording === 'true';
       recBtn.className = isRec ? "btn-rec recording" : "btn-rec";
       recordingStates[camId] = isRec;
     }
-
     if (detailsArray.length > 0) {
       const li = document.createElement("li");
       li.innerHTML = `<span class="log-cam">${name}</span>
@@ -276,10 +277,55 @@
     }
   };
 
+  // ── Client-pull frame rendering ──
+  // Each camera gets its own Image object and canvas
+  // Browser fetches a fresh JPEG every interval — works perfectly on cloud
+  const camIds = [{% for cam in cams %}{{ cam.id }}{% if not loop.last %},{% endif %}{% endfor %}];
+  const failCount = {};
+
+  function startFeed(camId) {
+    const canvas = document.getElementById(`canvas-${camId}`);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    let pulling = true;
+
+    function pull() {
+      if (!pulling) return;
+      img.src = `/frame/${camId}?t=${Date.now()}`;
+    }
+
+    img.onload = () => {
+      // Set canvas size to match image
+      if (canvas.width !== img.naturalWidth) {
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+      }
+      ctx.drawImage(img, 0, 0);
+      failCount[camId] = 0;
+      document.getElementById(`offline-${camId}`).style.display = "none";
+      canvas.style.display = "block";
+      setTimeout(pull, 80);  // ~12fps — smooth and low bandwidth
+    };
+
+    img.onerror = () => {
+      failCount[camId] = (failCount[camId] || 0) + 1;
+      if (failCount[camId] > 5) {
+        canvas.style.display = "none";
+        document.getElementById(`offline-${camId}`).style.display = "flex";
+      }
+      setTimeout(pull, 1000);  // retry after 1s on error
+    };
+
+    pull();
+  }
+
+  // Start all camera feeds
+  camIds.forEach(id => startFeed(id));
+
   async function toggleRecord(camId) {
     const isRecording = recordingStates[camId];
     const endpoint = isRecording ? `/stop_record/${camId}` : `/record/${camId}`;
-    
     try {
       const res = await fetch(endpoint, { method: 'POST' });
       const data = await res.json();
@@ -293,24 +339,37 @@
     document.getElementById("ai-panel").classList.toggle("open");
   }
 
+  // Fetch ngrok URL
+  fetch("/ngrok-url").then(r => r.json()).then(data => {
+    if (data.url) {
+      const banner = document.getElementById("ngrok-banner");
+      const link = document.getElementById("ngrok-link");
+      banner.style.display = "flex";
+      link.href = data.url;
+      link.textContent = data.url;
+    }
+  }).catch(() => {});
+
+  function copyNgrok() {
+    const url = document.getElementById("ngrok-link").textContent;
+    navigator.clipboard.writeText(url);
+  }
+
   async function sendAI() {
     const input = document.getElementById("ai-input");
     const query = input.value.trim();
     if (!query) return;
     input.value = "";
-
     const msgs = document.getElementById("ai-messages");
     const userMsg = document.createElement("div");
     userMsg.className = "ai-msg user";
     userMsg.textContent = query;
     msgs.appendChild(userMsg);
-
     const thinking = document.createElement("div");
     thinking.className = "ai-msg thinking";
     thinking.textContent = "Thinking...";
     msgs.appendChild(thinking);
     msgs.scrollTop = msgs.scrollHeight;
-
     try {
       const res = await fetch("/ai", {
         method: "POST",
