@@ -144,7 +144,8 @@
   </div>
 </nav>
 
-<!-- ngrok public URL banner -->
+<!-- ngrok public URL banner (admin only) -->
+{% if role == 'admin' %}
 <div id="ngrok-banner" style="display:none; background:#f0fdf4; border-bottom:1px solid #bbf7d0; padding:0.5rem 2rem; font-size:0.82rem; color:#15803d; align-items:center; gap:0.5rem;">
   <svg width="14" height="14" viewBox="0 0 24 24" fill="#15803d"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
   Public URL: <span id="ngrok-masked" style="font-weight:700;"></span>
@@ -152,6 +153,7 @@
   <button onclick="copyNgrok()" style="padding:0.2rem 0.6rem;border:1px solid #bbf7d0;border-radius:6px;background:#fff;color:#15803d;font-size:0.75rem;cursor:pointer;">Copy</button>
   <a id="ngrok-link" href="#" target="_blank" style="display:none;"></a>
 </div>
+{% endif %}
 
 <div class="container">
   <div class="page-title">Live Dashboard</div>

@@ -42,16 +42,22 @@ def init_db():
     with get_db() as con:
         con.executescript("""
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id       INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                role TEXT NOT NULL DEFAULT 'user'
+                role     TEXT NOT NULL DEFAULT 'user'
             );
             CREATE TABLE IF NOT EXISTS cameras (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                url  TEXT NOT NULL,
-                active INTEGER DEFAULT 1
+                id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                name    TEXT NOT NULL,
+                url     TEXT NOT NULL,
+                active  INTEGER DEFAULT 1
+            );
+            CREATE TABLE IF NOT EXISTS camera_permissions (
+                id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                cam_id  INTEGER NOT NULL,
+                UNIQUE(user_id, cam_id)
             );
             CREATE TABLE IF NOT EXISTS detections (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,6 +75,26 @@ def init_db():
                 end_time   TEXT
             );
         """)
+        # migrate: create camera_permissions if missing
+        tables = [r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
+        if "camera_permissions" not in tables:
+            con.execute("""
+                CREATE TABLE camera_permissions (
+                    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    cam_id  INTEGER NOT NULL,
+                    UNIQUE(user_id, cam_id)
+                )
+            """)
+            # migrate old user_id assignments into permissions
+            cols = [r[1] for r in con.execute("PRAGMA table_info(cameras)").fetchall()]
+            if "user_id" in cols:
+                rows = con.execute("SELECT id, user_id FROM cameras WHERE user_id IS NOT NULL AND active=1").fetchall()
+                for r in rows:
+                    try:
+                        con.execute("INSERT INTO camera_permissions (user_id, cam_id) VALUES (?,?)", (r[1], r[0]))
+                    except:
+                        pass
         if not con.execute("SELECT 1 FROM users WHERE username='admin'").fetchone():
             con.execute("INSERT INTO users (username,password,role) VALUES (?,?,?)",
                         ("admin", hash_pw("admin123"), "admin"))
@@ -237,6 +263,9 @@ def stop_camera(cam_id):
         cameras.pop(cam_id, None)
 
 def load_cameras_from_db():
+    # Stop any stale cameras in memory first
+    for cam_id in list(cameras.keys()):
+        stop_camera(cam_id)
     with get_db() as con:
         rows = con.execute("SELECT id,name,url FROM cameras WHERE active=1").fetchall()
     for r in rows:
@@ -302,9 +331,25 @@ def logout():
 @login_required
 def dashboard():
     with get_db() as con:
-        cams = con.execute("SELECT * FROM cameras WHERE active=1").fetchall()
+        if is_admin():
+            cams = con.execute("SELECT * FROM cameras WHERE active=1").fetchall()
+        else:
+            user_row = con.execute("SELECT id FROM users WHERE username=?", (session["user"],)).fetchone()
+            cams = con.execute(
+                "SELECT c.* FROM cameras c "
+                "JOIN camera_permissions p ON c.id=p.cam_id "
+                "WHERE c.active=1 AND p.user_id=?", (user_row["id"],)
+            ).fetchall()
+        cam_ids = [c["id"] for c in cams]
         total = con.execute("SELECT COUNT(*) as c FROM detections").fetchone()["c"]
-        recent = con.execute("SELECT * FROM detections ORDER BY id DESC LIMIT 30").fetchall()
+        if cam_ids:
+            ph = ",".join("?" * len(cam_ids))
+            recent = con.execute(
+                f"SELECT * FROM detections WHERE cam_id IN ({ph}) ORDER BY id DESC LIMIT 30",
+                cam_ids
+            ).fetchall()
+        else:
+            recent = []
     return render_template("dashboard.html", cams=cams, total=total, recent=recent,
                            user=session["user"], role=session["role"])
 
@@ -314,25 +359,39 @@ def admin():
     msg = None
     if request.method == "POST":
         action = request.form.get("action")
-        if action == "add_cam":
-            name = request.form["name"].strip()
+
+        if action == "add_camera":
+            cam_name  = request.form["cam_name"].strip()
             ip_or_url = request.form["ip"].strip()
             url = ip_or_url if ip_or_url.startswith("http") else f"http://{ip_or_url}:8080/video"
             with get_db() as con:
-                cur = con.execute("INSERT INTO cameras (name,url) VALUES (?,?)", (name, url))
-                cam_id = cur.lastrowid
-            start_camera(cam_id, url, name)
-            msg = f"Camera '{name}' added."
-        elif action == "delete_cam":
+                cur = con.execute("INSERT INTO cameras (name,url) VALUES (?,?)", (cam_name, url))
+                start_camera(cur.lastrowid, url, cam_name)
+            msg = f"Camera '{cam_name}' added."
+
+        elif action == "edit_camera":
+            cam_id    = int(request.form["cam_id"])
+            cam_name  = request.form["cam_name"].strip()
+            ip_or_url = request.form["ip"].strip()
+            url = ip_or_url if ip_or_url.startswith("http") else f"http://{ip_or_url}:8080/video"
+            stop_camera(cam_id)
+            with get_db() as con:
+                con.execute("UPDATE cameras SET name=?,url=? WHERE id=?", (cam_name, url, cam_id))
+            start_camera(cam_id, url, cam_name)
+            msg = "Camera updated."
+
+        elif action == "delete_camera":
             cam_id = int(request.form["cam_id"])
             stop_camera(cam_id)
             with get_db() as con:
                 con.execute("UPDATE cameras SET active=0 WHERE id=?", (cam_id,))
+                con.execute("DELETE FROM camera_permissions WHERE cam_id=?", (cam_id,))
             msg = "Camera removed."
+
         elif action == "add_user":
             uname = request.form["uname"].strip()
-            pw = request.form["pw"].strip()
-            role = request.form["role"]
+            pw    = request.form["pw"].strip()
+            role  = request.form["role"]
             try:
                 with get_db() as con:
                     con.execute("INSERT INTO users (username,password,role) VALUES (?,?,?)",
@@ -340,21 +399,55 @@ def admin():
                 msg = f"User '{uname}' created."
             except sqlite3.IntegrityError:
                 msg = "Username already exists."
+
         elif action == "delete_user":
             uid = int(request.form["uid"])
             with get_db() as con:
+                con.execute("DELETE FROM camera_permissions WHERE user_id=?", (uid,))
                 con.execute("DELETE FROM users WHERE id=? AND username!='admin'", (uid,))
-            msg = "User deleted."
+            msg = "User removed."
+
+        elif action == "grant_permission":
+            uid    = int(request.form["uid"])
+            cam_id = int(request.form["cam_id"])
+            with get_db() as con:
+                try:
+                    con.execute("INSERT INTO camera_permissions (user_id,cam_id) VALUES (?,?)", (uid, cam_id))
+                    msg = "Permission granted."
+                except sqlite3.IntegrityError:
+                    msg = "Permission already exists."
+
+        elif action == "revoke_permission":
+            uid    = int(request.form["uid"])
+            cam_id = int(request.form["cam_id"])
+            with get_db() as con:
+                con.execute("DELETE FROM camera_permissions WHERE user_id=? AND cam_id=?", (uid, cam_id))
+            msg = "Permission revoked."
+
     with get_db() as con:
-        cams = con.execute("SELECT * FROM cameras WHERE active=1").fetchall()
-        users = con.execute("SELECT id,username,role FROM users").fetchall()
-        stats = con.execute(
-            "SELECT cam_name, COUNT(*) as events, MAX(timestamp) as last "
-            "FROM detections GROUP BY cam_name"
-        ).fetchall()
+        all_cameras = con.execute("SELECT * FROM cameras WHERE active=1").fetchall()
+        users = con.execute("SELECT * FROM users WHERE role='user'").fetchall()
+        user_data = []
+        for u in users:
+            permitted = con.execute(
+                "SELECT c.* FROM cameras c JOIN camera_permissions p ON c.id=p.cam_id "
+                "WHERE p.user_id=? AND c.active=1", (u["id"],)
+            ).fetchall()
+            permitted_ids = [c["id"] for c in permitted]
+            unassigned = [c for c in all_cameras if c["id"] not in permitted_ids]
+            user_data.append({
+                "id": u["id"], "username": u["username"],
+                "permitted": permitted,
+                "permitted_ids": permitted_ids,
+                "unassigned": unassigned
+            })
         total = con.execute("SELECT COUNT(*) as c FROM detections").fetchone()["c"]
-    return render_template("admin.html", cams=cams, users=users, stats=stats,
-                           total=total, msg=msg, user=session["user"])
+        total_users = len(users)
+        total_cams = len(all_cameras)
+
+    return render_template("admin.html", user_data=user_data, all_cameras=all_cameras,
+                           total=total, total_users=total_users, total_cams=total_cams,
+                           msg=msg, user=session["user"])
 
 
 # ── Video stream ──────────────────────────────────────────────────────────────
@@ -553,22 +646,38 @@ def ai_query():
     user = session.get("user")
     with get_db() as con:
         total = con.execute("SELECT COUNT(*) as c FROM detections").fetchone()["c"]
-        recent = con.execute("SELECT cam_name,details,timestamp FROM detections ORDER BY id DESC LIMIT 50").fetchall()
-        cam_stats = con.execute(
-            "SELECT cam_name, COUNT(*) as events, MAX(timestamp) as last FROM detections GROUP BY cam_name"
-        ).fetchall()
         if role == "admin":
+            recent = con.execute("SELECT cam_name,details,timestamp FROM detections ORDER BY id DESC LIMIT 50").fetchall()
+            cam_stats = con.execute(
+                "SELECT cam_name, COUNT(*) as events, MAX(timestamp) as last FROM detections GROUP BY cam_name"
+            ).fetchall()
             users = con.execute("SELECT username, role FROM users").fetchall()
             cams = con.execute("SELECT name, url FROM cameras WHERE active=1").fetchall()
             extra = f"Users: {[dict(u) for u in users]}\nCameras: {[dict(c) for c in cams]}\n"
         else:
+            user_row = con.execute("SELECT id FROM users WHERE username=?", (user,)).fetchone()
+            permitted_ids = [r[0] for r in con.execute(
+                "SELECT cam_id FROM camera_permissions WHERE user_id=?", (user_row["id"],)
+            ).fetchall()]
+            if permitted_ids:
+                ph = ",".join("?" * len(permitted_ids))
+                recent = con.execute(
+                    f"SELECT cam_name,details,timestamp FROM detections WHERE cam_id IN ({ph}) ORDER BY id DESC LIMIT 50",
+                    permitted_ids
+                ).fetchall()
+                cam_stats = con.execute(
+                    f"SELECT cam_name, COUNT(*) as events, MAX(timestamp) as last FROM detections WHERE cam_id IN ({ph}) GROUP BY cam_name",
+                    permitted_ids
+                ).fetchall()
+            else:
+                recent, cam_stats = [], []
             extra = ""
     recent_lines = "\n".join(f"  - {r['cam_name']}: {r['details']} at {r['timestamp']}" for r in recent)
     stat_lines = "\n".join(f"  - {s['cam_name']}: {s['events']} events, last at {s['last']}" for s in cam_stats)
-    restrictions = ("Full system access." if role == "admin" else
-                    "Only detection data. No camera IPs, users, or admin settings.")
+    restrictions = ("Full system access including all users, cameras, and system settings." if role == "admin"
+                    else "You MUST NOT reveal camera IPs, stream URLs, other users' data, passwords, or any system configuration. Only answer about detection events from the user's permitted cameras.")
     prompt = f"""You are an AI assistant for PersonMonitor.
-User: {role} '{user}'. Access: {restrictions}
+User: {role} '{user}'. Access policy: {restrictions}
 Total events: {total}
 {extra}Camera stats:\n{stat_lines}
 Recent detections:\n{recent_lines}
@@ -583,6 +692,7 @@ Answer concisely. For video clip requests tell user: /clip <cam_id> <YYYY-MM-DD 
 
 # ── SSE ───────────────────────────────────────────────────────────────────────
 @app.route("/ngrok-url")
+@admin_required
 def ngrok_url():
     try:
         import urllib.request, json
@@ -597,10 +707,20 @@ def ngrok_url():
 @app.route("/events")
 @login_required
 def events():
+    if is_admin():
+        allowed = None  # all cameras
+    else:
+        with get_db() as con:
+            user_row = con.execute("SELECT id FROM users WHERE username=?", (session["user"],)).fetchone()
+            allowed = {r[0] for r in con.execute(
+                "SELECT cam_id FROM camera_permissions WHERE user_id=?", (user_row["id"],)
+            ).fetchall()}
     def stream():
         last = {}
         while True:
             for cid, s in list(cameras.items()):
+                if allowed is not None and cid not in allowed:
+                    continue
                 key = f"{cid}:{','.join(s['detections'])}:{s['time']}"
                 if last.get(cid) != key:
                     last[cid] = key

@@ -21,69 +21,75 @@
     .page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.3rem; }
     .page-sub { font-size: 0.85rem; color: #6b7280; margin-bottom: 2rem; }
 
-    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
     .stat { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1.2rem 1.4rem; }
     .stat label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; }
     .stat .val { font-size: 2rem; font-weight: 800; color: #111827; margin-top: 0.3rem; }
 
     .toast { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 10px; padding: 0.75rem 1.1rem; font-size: 0.84rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
-    .card-header { padding: 1rem 1.4rem; border-bottom: 1px solid #f3f4f6; font-size: 0.88rem; font-weight: 700; color: #111827; }
-    .card-body { padding: 1.4rem; }
+    .section { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; margin-bottom: 2rem; overflow: hidden; }
+    .section-header { padding: 1rem 1.4rem; border-bottom: 1px solid #f3f4f6; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: #374151; }
+    .section-body { padding: 1.4rem; }
 
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
-    .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
-    .field { margin-bottom: 1rem; }
-    label.lbl { display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.4rem; letter-spacing: 0.03em; }
-    input[type=text], input[type=password], select { width: 100%; padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 9px; font-size: 0.87rem; color: #111827; background: #fafafa; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-    input:focus, select:focus { border-color: #111827; background: #fff; box-shadow: 0 0 0 3px rgba(17,24,39,0.06); }
-    .btn { padding: 0.65rem 1.4rem; background: #111827; color: #fff; border: none; border-radius: 9px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.8rem; align-items: end; }
+    .field label { display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.4rem; }
+    input[type=text], input[type=password], select {
+      width: 100%; padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb;
+      border-radius: 9px; font-size: 0.87rem; color: #111827;
+      background: #fafafa; outline: none; transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: #111827; background: #fff; }
+    .btn { padding: 0.65rem 1.4rem; background: #111827; color: #fff; border: none; border-radius: 9px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
     .btn:hover { background: #1f2937; }
-    .btn-danger { padding: 0.35rem 0.8rem; background: transparent; color: #dc2626; border: 1.5px solid #fecaca; border-radius: 7px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-sm { padding: 0.35rem 0.8rem; font-size: 0.78rem; font-weight: 600; border-radius: 7px; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-dark { background: #111827; color: #fff; }
+    .btn-dark:hover { background: #1f2937; }
+    .btn-outline { background: transparent; color: #6b7280; border: 1.5px solid #e5e7eb; }
+    .btn-outline:hover { border-color: #111827; color: #111827; }
+    .btn-danger { background: transparent; color: #dc2626; border: 1.5px solid #fecaca; }
     .btn-danger:hover { background: #fef2f2; }
+    .btn-green { background: transparent; color: #15803d; border: 1.5px solid #bbf7d0; }
+    .btn-green:hover { background: #f0fdf4; }
 
-    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-    th { text-align: left; padding: 0.65rem 0.9rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #9ca3af; border-bottom: 1px solid #f3f4f6; }
-    td { padding: 0.75rem 0.9rem; border-bottom: 1px solid #f9fafb; color: #374151; }
+    /* Cameras table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 0.6rem 0.8rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #9ca3af; border-bottom: 1px solid #f3f4f6; }
+    td { padding: 0.75rem 0.8rem; border-bottom: 1px solid #f9fafb; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafafa; }
-    .role-badge { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .role-admin { background: #111827; color: #fff; }
-    .role-user  { background: #f3f4f6; color: #374151; }
-    .empty-row td { text-align: center; color: #9ca3af; padding: 2rem; }
+    .cam-status { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 600; color: #15803d; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: blink 1.4s infinite; }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
+    .url-cell { color: #9ca3af; font-size: 0.78rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* User cards */
+    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.2rem; }
+    .user-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+    .user-card-header { padding: 0.9rem 1.2rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid #f3f4f6; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #111827; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .user-name { font-weight: 700; font-size: 0.9rem; }
+    .user-card-cams { padding: 0.8rem 1.2rem; display: flex; flex-wrap: wrap; gap: 0.4rem; min-height: 44px; }
+    .cam-tag { display: inline-flex; align-items: center; gap: 0.35rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 6px; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem; }
+    .cam-tag-none { font-size: 0.78rem; color: #9ca3af; font-style: italic; }
+    .user-card-footer { padding: 0.8rem 1.2rem; border-top: 1px solid #f3f4f6; display: flex; gap: 0.5rem; align-items: center; }
+    .assign-select { flex: 1; padding: 0.45rem 0.7rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #fafafa; outline: none; }
+    .assign-select:focus { border-color: #111827; }
+
+    /* Edit camera inline */
+    .edit-row { display: none; background: #f9fafb; }
+    .edit-row td { padding: 0.6rem 0.8rem; }
+    .edit-inner { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .edit-inner input { flex: 1; min-width: 120px; padding: 0.45rem 0.7rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #fff; outline: none; }
+    .edit-inner input:focus { border-color: #111827; }
 
     ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+    @media (max-width: 700px) { .stats-row { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } }
 
-    @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } .form-row, .form-row.three { grid-template-columns: 1fr; } }
-
-    /* ── AI Chat ── */
-    .ai-fab {
-      position: fixed; bottom: 2rem; right: 2rem;
-      width: 52px; height: 52px;
-      background: #111827; color: #fff;
-      border: none; border-radius: 50%;
-      cursor: pointer; z-index: 999;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      transition: transform 0.2s, background 0.2s;
-    }
+    /* AI Chat */
+    .ai-fab { position: fixed; bottom: 2rem; right: 2rem; width: 52px; height: 52px; background: #111827; color: #fff; border: none; border-radius: 50%; cursor: pointer; z-index: 999; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.2s, background 0.2s; }
     .ai-fab:hover { background: #1f2937; transform: scale(1.08); }
-    .ai-panel {
-      position: fixed; bottom: 5.5rem; right: 2rem;
-      width: 360px; max-height: 520px;
-      background: #fff; border: 1px solid #e5e7eb;
-      border-radius: 18px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-      display: flex; flex-direction: column;
-      z-index: 998; overflow: hidden;
-      transform: scale(0.95) translateY(10px);
-      opacity: 0; pointer-events: none;
-      transition: all 0.2s ease;
-    }
+    .ai-panel { position: fixed; bottom: 5.5rem; right: 2rem; width: 360px; max-height: 520px; background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); display: flex; flex-direction: column; z-index: 998; overflow: hidden; transform: scale(0.95) translateY(10px); opacity: 0; pointer-events: none; transition: all 0.2s ease; }
     .ai-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
     .ai-panel-header { padding: 1rem 1.2rem; background: #111827; color: #fff; display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 700; flex-shrink: 0; }
     .ai-panel-header .ai-sub { font-size: 0.7rem; color: #6b7280; margin-left: auto; }
@@ -93,19 +99,16 @@
     .ai-msg.bot  { background: #f3f4f6; color: #111827; align-self: flex-start; border-bottom-left-radius: 4px; }
     .ai-msg.thinking { background: #f9fafb; color: #9ca3af; font-style: italic; align-self: flex-start; }
     .ai-input-row { padding: 0.8rem; border-top: 1px solid #f3f4f6; display: flex; gap: 0.5rem; flex-shrink: 0; }
-    .ai-input-row input { flex: 1; padding: 0.6rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 9px; font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+    .ai-input-row input { flex: 1; padding: 0.6rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 9px; font-size: 0.85rem; outline: none; }
     .ai-input-row input:focus { border-color: #111827; }
-    .ai-input-row button { padding: 0.6rem 1rem; background: #111827; color: #fff; border: none; border-radius: 9px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .ai-input-row button:hover { background: #1f2937; }
+    .ai-input-row button { padding: 0.6rem 1rem; background: #111827; color: #fff; border: none; border-radius: 9px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
   </style>
 </head>
 <body>
 
 <nav>
   <a class="nav-logo" href="#">
-    <div class="icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-    </div>
+    <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     PersonMonitor
   </a>
   <div class="nav-right">
@@ -118,7 +121,7 @@
 
 <div class="container">
   <div class="page-title">Admin Panel</div>
-  <div class="page-sub">Manage cameras, users, and monitor detection statistics</div>
+  <div class="page-sub">Manage cameras, users, and access permissions independently</div>
 
   {% if msg %}
   <div class="toast">
@@ -128,127 +131,174 @@
   {% endif %}
 
   <div class="stats-row">
-    <div class="stat"><label>Total Events</label><div class="val">{{ total }}</div></div>
-    <div class="stat"><label>Cameras</label><div class="val">{{ cams|length }}</div></div>
-    <div class="stat"><label>Users</label><div class="val">{{ users|length }}</div></div>
+    <div class="stat"><label>Total Users</label><div class="val">{{ total_users }}</div></div>
+    <div class="stat"><label>Active Cameras</label><div class="val">{{ total_cams }}</div></div>
+    <div class="stat"><label>Total Detections</label><div class="val">{{ total }}</div></div>
   </div>
 
-  <div class="grid-2" style="margin-bottom:1.5rem;">
-    <div class="card">
-      <div class="card-header">Add IP Camera</div>
-      <div class="card-body">
-        <form method="POST">
-          <input type="hidden" name="action" value="add_cam"/>
-          <div class="form-row">
-            <div class="field">
-              <label class="lbl">Camera Name</label>
-              <input type="text" name="name" placeholder="e.g. Front Door" required/>
-            </div>
-            <div class="field">
-              <label class="lbl">Phone IP / Stream URL</label>
-              <input type="text" name="ip" placeholder="192.168.x.x or http://stream-url" required/>
-              <span style="font-size:0.72rem;color:#9ca3af;margin-top:0.3rem;display:block;">IP uses port 8080 · or paste any stream URL</span>
-            </div>
-          </div>
-          <button class="btn" type="submit">Add Camera</button>
-        </form>
-      </div>
+  <!-- ── Section 1: Cameras ── -->
+  <div class="section">
+    <div class="section-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#374151"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+      Cameras
     </div>
-
-    <div class="card">
-      <div class="card-header">Add User</div>
-      <div class="card-body">
-        <form method="POST">
-          <input type="hidden" name="action" value="add_user"/>
-          <div class="form-row three">
-            <div class="field">
-              <label class="lbl">Username</label>
-              <input type="text" name="uname" placeholder="Username" required/>
-            </div>
-            <div class="field">
-              <label class="lbl">Password</label>
-              <input type="password" name="pw" placeholder="Password" required/>
-            </div>
-            <div class="field">
-              <label class="lbl">Role</label>
-              <select name="role">
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
+    <div class="section-body">
+      <!-- Add camera form -->
+      <form method="POST" style="margin-bottom:1.5rem;">
+        <input type="hidden" name="action" value="add_camera"/>
+        <div class="form-grid">
+          <div class="field">
+            <label>Camera Name</label>
+            <input type="text" name="cam_name" placeholder="e.g. Front Door" required/>
           </div>
-          <button class="btn" type="submit">Add User</button>
-        </form>
-      </div>
-    </div>
-  </div>
+          <div class="field">
+            <label>Phone IP / Stream URL</label>
+            <input type="text" name="ip" placeholder="192.168.x.x or full URL" required/>
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end;">
+            <button class="btn" type="submit" style="width:100%;">Add Camera</button>
+          </div>
+        </div>
+      </form>
 
-  <div class="grid-2" style="margin-bottom:1.5rem;">
-    <div class="card">
-      <div class="card-header">Active Cameras</div>
+      {% if all_cameras %}
       <table>
-        <thead><tr><th>Name</th><th>URL</th><th></th></tr></thead>
-        <tbody>
-          {% for cam in cams %}
+        <thead>
           <tr>
-            <td><strong>{{ cam.name }}</strong></td>
-            <td style="color:#9ca3af;font-size:0.78rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cam.url }}</td>
-            <td>
-              <form method="POST" style="display:inline">
-                <input type="hidden" name="action" value="delete_cam"/>
+            <th>Status</th>
+            <th>Name</th>
+            <th>URL</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cam in all_cameras %}
+          <tr id="row-cam-{{ cam.id }}">
+            <td><span class="cam-status"><span class="dot"></span>Live</span></td>
+            <td style="font-weight:600;">{{ cam.name }}</td>
+            <td class="url-cell" title="{{ cam.url }}">{{ cam.url }}</td>
+            <td style="display:flex;gap:0.4rem;">
+              <button class="btn-sm btn-outline" onclick="toggleEditCam({{ cam.id }})">Edit</button>
+              <form method="POST" onsubmit="return confirm('Remove camera {{ cam.name }}?')">
+                <input type="hidden" name="action" value="delete_camera"/>
                 <input type="hidden" name="cam_id" value="{{ cam.id }}"/>
-                <button class="btn-danger" type="submit">Remove</button>
+                <button class="btn-sm btn-danger" type="submit">Remove</button>
               </form>
             </td>
           </tr>
-          {% else %}
-          <tr class="empty-row"><td colspan="3">No cameras added yet</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <div class="card-header">Users</div>
-      <table>
-        <thead><tr><th>Username</th><th>Role</th><th></th></tr></thead>
-        <tbody>
-          {% for u in users %}
-          <tr>
-            <td><strong>{{ u.username }}</strong></td>
-            <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
-            <td>
-              {% if u.username != 'admin' %}
-              <form method="POST" style="display:inline">
-                <input type="hidden" name="action" value="delete_user"/>
-                <input type="hidden" name="uid" value="{{ u.id }}"/>
-                <button class="btn-danger" type="submit">Delete</button>
+          <tr class="edit-row" id="edit-cam-{{ cam.id }}">
+            <td colspan="4">
+              <form method="POST">
+                <input type="hidden" name="action" value="edit_camera"/>
+                <input type="hidden" name="cam_id" value="{{ cam.id }}"/>
+                <div class="edit-inner">
+                  <input type="text" name="cam_name" value="{{ cam.name }}" placeholder="Camera name" required/>
+                  <input type="text" name="ip" value="{{ cam.url }}" placeholder="IP or URL" required/>
+                  <button class="btn-sm btn-dark" type="submit">Save</button>
+                  <button class="btn-sm btn-outline" type="button" onclick="toggleEditCam({{ cam.id }})">Cancel</button>
+                </div>
               </form>
-              {% endif %}
             </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
+      {% else %}
+      <p style="color:#9ca3af;font-size:0.85rem;font-style:italic;">No cameras added yet.</p>
+      {% endif %}
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header">Detection Statistics by Camera</div>
-    <table>
-      <thead><tr><th>Camera</th><th>Total Events</th><th>Last Detection</th></tr></thead>
-      <tbody>
-        {% for s in stats %}
-        <tr>
-          <td><strong>{{ s.cam_name }}</strong></td>
-          <td>{{ s.events }}</td>
-          <td style="color:#9ca3af;">{{ s.last }}</td>
-        </tr>
-        {% else %}
-        <tr class="empty-row"><td colspan="3">No detections recorded yet</td></tr>
+  <!-- ── Section 2: Users ── -->
+  <div class="section">
+    <div class="section-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#374151"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      Users
+    </div>
+    <div class="section-body">
+      <!-- Add user form -->
+      <form method="POST" style="margin-bottom:1.5rem;">
+        <input type="hidden" name="action" value="add_user"/>
+        <div class="form-grid">
+          <div class="field">
+            <label>Username</label>
+            <input type="text" name="uname" placeholder="e.g. john" required/>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" name="pw" placeholder="Password" required/>
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <select name="role">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end;">
+            <button class="btn" type="submit" style="width:100%;">Add User</button>
+          </div>
+        </div>
+      </form>
+
+      {% if user_data %}
+      <div class="users-grid">
+        {% for u in user_data %}
+        <div class="user-card">
+          <div class="user-card-header">
+            <div class="avatar">{{ u.username[0].upper() }}</div>
+            <div class="user-name">{{ u.username }}</div>
+            <form method="POST" style="margin-left:auto;" onsubmit="return confirm('Delete user {{ u.username }}?')">
+              <input type="hidden" name="action" value="delete_user"/>
+              <input type="hidden" name="uid" value="{{ u.id }}"/>
+              <button class="btn-sm btn-danger" type="submit">Delete</button>
+            </form>
+          </div>
+          <!-- Permitted cameras -->
+          <div class="user-card-cams">
+            {% if u.permitted %}
+              {% for cam in u.permitted %}
+              <span class="cam-tag">
+                <span class="dot" style="width:6px;height:6px;"></span>
+                {{ cam.name }}
+                <form method="POST" style="display:inline;">
+                  <input type="hidden" name="action" value="revoke_permission"/>
+                  <input type="hidden" name="uid" value="{{ u.id }}"/>
+                  <input type="hidden" name="cam_id" value="{{ cam.id }}"/>
+                  <button type="submit" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:0.8rem;line-height:1;padding:0 0 0 2px;" title="Revoke">✕</button>
+                </form>
+              </span>
+              {% endfor %}
+            {% else %}
+              <span class="cam-tag-none">No cameras assigned</span>
+            {% endif %}
+          </div>
+          <!-- Assign camera -->
+          {% if u.unassigned %}
+          <div class="user-card-footer">
+            <form method="POST" style="display:flex;gap:0.5rem;flex:1;align-items:center;">
+              <input type="hidden" name="action" value="grant_permission"/>
+              <input type="hidden" name="uid" value="{{ u.id }}"/>
+              <select name="cam_id" class="assign-select">
+                {% for cam in u.unassigned %}
+                <option value="{{ cam.id }}">{{ cam.name }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn-sm btn-green" type="submit">Grant Access</button>
+            </form>
+          </div>
+          {% else %}
+          <div class="user-card-footer">
+            <span style="font-size:0.78rem;color:#9ca3af;font-style:italic;">All cameras assigned</span>
+          </div>
+          {% endif %}
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
+      </div>
+      {% else %}
+      <p style="color:#9ca3af;font-size:0.85rem;font-style:italic;">No users yet. Add one above.</p>
+      {% endif %}
+    </div>
   </div>
 </div>
 
@@ -257,7 +307,6 @@
   <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 11H7v-2h10v2zm0-3H7V8h10v2z"/></svg>
 </button>
 
-<!-- AI Chat Panel -->
 <div class="ai-panel" id="ai-panel">
   <div class="ai-panel-header">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
@@ -265,7 +314,7 @@
     <span class="ai-sub">admin access</span>
   </div>
   <div class="ai-messages" id="ai-messages">
-    <div class="ai-msg bot">Hi {{ user }}! As admin, I have full access to cameras, users, and all detection statistics. Ask me anything!</div>
+    <div class="ai-msg bot">Hi {{ user }}! I have full access — users, cameras, and all detection stats.</div>
   </div>
   <div class="ai-input-row">
     <input type="text" id="ai-input" placeholder="Ask about your system..." onkeydown="if(event.key==='Enter') sendAI()"/>
@@ -274,6 +323,11 @@
 </div>
 
 <script>
+  function toggleEditCam(id) {
+    const row = document.getElementById(`edit-cam-${id}`);
+    row.style.display = row.style.display === 'table-row' ? 'none' : 'table-row';
+  }
+
   function toggleAI() {
     document.getElementById("ai-panel").classList.toggle("open");
   }
@@ -283,19 +337,16 @@
     const query = input.value.trim();
     if (!query) return;
     input.value = "";
-
     const msgs = document.getElementById("ai-messages");
     const userMsg = document.createElement("div");
     userMsg.className = "ai-msg user";
     userMsg.textContent = query;
     msgs.appendChild(userMsg);
-
     const thinking = document.createElement("div");
     thinking.className = "ai-msg thinking";
     thinking.textContent = "Thinking...";
     msgs.appendChild(thinking);
     msgs.scrollTop = msgs.scrollHeight;
-
     try {
       const res = await fetch("/ai", {
         method: "POST",
@@ -307,7 +358,7 @@
       thinking.textContent = data.answer || data.error || "No response.";
     } catch {
       thinking.className = "ai-msg bot";
-      thinking.textContent = "Failed to reach AI. Please try again.";
+      thinking.textContent = "Failed to reach AI.";
     }
     msgs.scrollTop = msgs.scrollHeight;
   }
