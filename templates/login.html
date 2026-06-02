@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monitor — Login</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+      padding: 3rem 2.8rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: #111827;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo-icon svg { width: 20px; height: 20px; fill: #fff; }
+    .logo h1 { font-size: 1.15rem; font-weight: 700; color: #111827; }
+    .logo span { font-size: 0.72rem; color: #9ca3af; display: block; font-weight: 400; }
+
+    /* Role toggle */
+    .role-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #f3f4f6;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 1.8rem;
+    }
+
+    .role-toggle input { display: none; }
+
+    .role-toggle label {
+      text-align: center;
+      padding: 0.6rem;
+      border-radius: 9px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .role-toggle input:checked + label {
+      background: #fff;
+      color: #111827;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+
+    h2 { font-size: 1.4rem; font-weight: 700; color: #111827; margin-bottom: 0.3rem; }
+    p.sub { font-size: 0.85rem; color: #6b7280; margin-bottom: 1.6rem; }
+
+    .field { margin-bottom: 1.2rem; }
+
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.45rem;
+      letter-spacing: 0.03em;
+    }
+
+    input[type=text], input[type=password] {
+      width: 100%;
+      padding: 0.72rem 1rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      color: #111827;
+      background: #fafafa;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type=text]:focus, input[type=password]:focus {
+      border-color: #111827;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(17,24,39,0.06);
+    }
+
+    .error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-size: 0.82rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button[type=submit] {
+      width: 100%;
+      padding: 0.8rem;
+      background: #111827;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 0.2rem;
+    }
+
+    button[type=submit]:hover { background: #1f2937; }
+    button[type=submit]:active { transform: scale(0.99); }
+
+    .divider {
+      display: flex; align-items: center; gap: 0.8rem;
+      margin: 1.5rem 0 1.2rem;
+      color: #d1d5db; font-size: 0.75rem;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    <div>
+      <h1>PersonMonitor</h1>
+      <span>AI-powered surveillance</span>
+    </div>
+  </div>
+
+  <!-- Role selector -->
+  <div class="role-toggle">
+    <input type="radio" name="role_tab" id="tab-user" checked/>
+    <label for="tab-user" onclick="setRole('user')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      User
+    </label>
+    <input type="radio" name="role_tab" id="tab-admin"/>
+    <label for="tab-admin" onclick="setRole('admin')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      Admin
+    </label>
+  </div>
+
+  <h2 id="login-title">User Login</h2>
+  <p class="sub" id="login-sub">Sign in to view the live dashboard</p>
+
+  {% if error %}
+  <div class="error">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#dc2626"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <form method="POST">
+    <input type="hidden" name="expected_role" id="expected_role" value="user"/>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" name="username" placeholder="Enter username" required autofocus/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" name="password" placeholder="Enter password" required/>
+    </div>
+    <button type="submit" id="login-btn">Sign in as User →</button>
+  </form>
+</div>
+
+<script>
+  function setRole(role) {
+    document.getElementById('expected_role').value = role;
+    if (role === 'admin') {
+      document.getElementById('login-title').textContent = 'Admin Login';
+      document.getElementById('login-sub').textContent = 'Sign in to manage cameras and users';
+      document.getElementById('login-btn').textContent = 'Sign in as Admin →';
+    } else {
+      document.getElementById('login-title').textContent = 'User Login';
+      document.getElementById('login-sub').textContent = 'Sign in to view the live dashboard';
+      document.getElementById('login-btn').textContent = 'Sign in as User →';
+    }
+  }
+</script>
+</body>
+</html>

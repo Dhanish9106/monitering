@@ -1,0 +1,6 @@
+flask
+ultralytics
+opencv-python
+openpyxl
+google-generativeai
+python-dotenv

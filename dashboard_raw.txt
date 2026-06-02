@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard ƒ?" PersonMonitor</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f7fa;
+      color: #111827;
+      min-height: 100vh;
+    }
+
+    /* ƒ"?ƒ"? Nav ƒ"?ƒ"? */
+    nav {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.55rem;
+      font-weight: 700; font-size: 1rem; color: #111827;
+      text-decoration: none;
+    }
+
+    .nav-logo .icon {
+      width: 32px; height: 32px;
+      background: #111827;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .nav-logo .icon svg { width: 16px; height: 16px; fill: #fff; }
+
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+
+    .badge-role {
+      font-size: 0.7rem; font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 20px;
+      background: #f3f4f6;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-user { font-size: 0.85rem; color: #6b7280; }
+
+    .btn-logout {
+      font-size: 0.8rem; font-weight: 600;
+      color: #6b7280;
+      text-decoration: none;
+      padding: 0.4rem 0.9rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover { border-color: #111827; color: #111827; }
+
+    /* ƒ"?ƒ"? Layout ƒ"?ƒ"? */
+    .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+    .page-title {
+      font-size: 1.4rem; font-weight: 700; color: #111827;
+      margin-bottom: 0.3rem;
+    }
+
+    .page-sub { font-size: 0.85rem; color: #6b7280; margin-bottom: 2rem; }
+
+    /* ƒ"?ƒ"? Stat cards ƒ"?ƒ"? */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 1.3rem 1.5rem;
+    }
+
+    .stat label {
+      font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: #9ca3af;
+    }
+
+    .stat .val {
+      font-size: 2.2rem; font-weight: 800;
+      color: #111827; line-height: 1.1;
+      margin-top: 0.3rem;
+    }
+
+    .stat .meta { font-size: 0.75rem; color: #9ca3af; margin-top: 0.3rem; }
+
+    .live-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      margin-right: 5px;
+      animation: blink 1.4s infinite;
+    }
+
+    @keyframes blink {
+      0%,100% { opacity: 1; } 50% { opacity: 0.2; }
+    }
+
+    /* ƒ"?ƒ"? Grid ƒ"?ƒ"? */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 1.5rem;
+    }
+
+    /* ƒ"?ƒ"? Camera feeds ƒ"?ƒ"? */
+    .feeds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .feed-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .feed-header {
+      padding: 1rem 1.3rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .feed-header .cam-name { font-size: 0.95rem; font-weight: 700; }
+    .feed-header .cam-count {
+      margin-left: auto;
+      font-size: 0.82rem; font-weight: 700;
+      background: #f3f4f6;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      color: #374151;
+    }
+    .feed-header .cam-count.active {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .feed-card img {
+      width: 100%; display: block;
+      background: #f9fafb;
+      min-height: 300px;
+      object-fit: cover;
+    }
+
+    .no-cams {
+      background: #fff;
+      border: 1.5px dashed #e5e7eb;
+      border-radius: 14px;
+      padding: 3rem;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 0.9rem;
+    }
+
+    /* ƒ"?ƒ"? Log ƒ"?ƒ"? */
+    .log-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      max-height: 700px;
+    }
+
+    .log-header {
+      padding: 1rem 1.3rem;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 0.82rem; font-weight: 700;
+      color: #374151;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    #log-list {
+      list-style: none;
+      overflow-y: auto;
+      flex: 1;
+      padding: 0.6rem;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+
+    #log-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.8rem;
+      border-radius: 10px;
+      background: #f9fafb;
+      font-size: 0.8rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-cam { font-weight: 600; color: #374151; }
+    .log-count {
+      background: #111827; color: #fff;
+      border-radius: 20px; padding: 0.15rem 0.55rem;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .btn-download {
+      margin-left: auto;
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      border: 1.5px solid #e5e7eb;
+      background: #fff;
+      color: #6b7280;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-download:hover {
+      border-color: #111827;
+      color: #111827;
+      background: #f9fafb;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    PersonMonitor
+  </a>
+  <div class="nav-right">
+    {% if role == 'admin' %}
+      <a href="/admin" style="font-size:0.8rem;font-weight:600;color:#111827;text-decoration:none;padding:0.4rem 0.9rem;border:1.5px solid #111827;border-radius:8px;">Admin Panel</a>
+    {% endif %}
+    <span class="badge-role">{{ role }}</span>
+    <span class="nav-user">{{ user }}</span>
+    <a class="btn-logout" href="/logout">Sign out</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-title">Live Dashboard</div>
+  <div class="page-sub">Real-time person detection across all cameras</div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <label>Total Events</label>
+      <div class="val">{{ total }}</div>
+      <div class="meta">All time detections</div>
+    </div>
+    <div class="stat">
+      <label>Active Cameras</label>
+      <div class="val">{{ cams|length }}</div>
+      <div class="meta">Currently streaming</div>
+    </div>
+    <div class="stat">
+      <label>Live Persons</label>
+      <div class="val" id="total-live">0</div>
+      <div class="meta"><span class="live-dot"></span>Updating live</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div>
+      {% if cams %}
+      <div class="feeds-grid">
+        {% for cam in cams %}
+        <div class="feed-card">
+          <div class="feed-header">
+            <span class="live-dot"></span>
+            <span class="cam-name">{{ cam.name }}</span>
+            <span class="cam-count" id="count-{{ cam.id }}">0 persons</span>
+          </div>
+          <img src="/video/{{ cam.id }}" alt="{{ cam.name }}"/>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-cams">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="#d1d5db" style="margin-bottom:1rem"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        <p>No cameras configured yet.</p>
+        <p style="margin-top:0.4rem;font-size:0.8rem;">Ask an admin to add a camera.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="log-card">
+      <div class="log-header">
+        <span class="live-dot"></span>
+        Detection Log
+        <a href="/export" class="btn-download" title="Download as Excel">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-14 9v2h14v-2H5z"/></svg>
+        </a>
+      </div>
+      <ul id="log-list">
+        {% for r in recent %}
+        <li>
+          <span class="log-cam">{{ r.cam_name }}</span>
+          <span class="log-count">{{ r.count }}p</span>
+          <span class="log-time">{{ r.timestamp }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  const es = new EventSource("/events");
+  const liveCounts = {};
+
+  es.onmessage = e => {
+    const [camId, count, time, name] = e.data.split("|");
+    const n = parseInt(count);
+    liveCounts[camId] = n;
+
+    const badge = document.getElementById(`count-${camId}`);
+    if (badge) {
+      badge.textContent = `${count} person${n !== 1 ? "s" : ""}`;
+      badge.className = "cam-count" + (n > 0 ? " active" : "");
+    }
+
+    const total = Object.values(liveCounts).reduce((a, b) => a + b, 0);
+    document.getElementById("total-live").textContent = total;
+
+    // only log when persons are detected
+    if (n > 0) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="log-cam">${name}</span>
+                      <span class="log-count">${count}p</span>
+                      <span class="log-time">${time}</span>`;
+      const list = document.getElementById("log-list");
+      list.prepend(li);
+      if (list.children.length > 30) list.lastChild.remove();
+    }
+  };
+</script>
+
+</body>
+</html>
+

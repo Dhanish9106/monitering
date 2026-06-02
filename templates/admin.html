@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — PersonMonitor</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f7fa; color: #111827; min-height: 100vh; }
+
+    nav { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 0 2rem; height: 60px; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { display: flex; align-items: center; gap: 0.55rem; font-weight: 700; font-size: 1rem; color: #111827; text-decoration: none; }
+    .nav-logo .icon { width: 32px; height: 32px; background: #111827; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .nav-logo .icon svg { width: 16px; height: 16px; fill: #fff; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+    .badge-admin { font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 20px; background: #111827; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+    .btn-link { font-size: 0.8rem; font-weight: 600; color: #6b7280; text-decoration: none; padding: 0.4rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; transition: all 0.2s; }
+    .btn-link:hover { border-color: #111827; color: #111827; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .page-sub { font-size: 0.85rem; color: #6b7280; margin-bottom: 2rem; }
+
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1.2rem 1.4rem; }
+    .stat label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; }
+    .stat .val { font-size: 2rem; font-weight: 800; color: #111827; margin-top: 0.3rem; }
+
+    .toast { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 10px; padding: 0.75rem 1.1rem; font-size: 0.84rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+    .card-header { padding: 1rem 1.4rem; border-bottom: 1px solid #f3f4f6; font-size: 0.88rem; font-weight: 700; color: #111827; }
+    .card-body { padding: 1.4rem; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    .field { margin-bottom: 1rem; }
+    label.lbl { display: block; font-size: 0.75rem; font-weight: 600; color: #374151; margin-bottom: 0.4rem; letter-spacing: 0.03em; }
+    input[type=text], input[type=password], select { width: 100%; padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 9px; font-size: 0.87rem; color: #111827; background: #fafafa; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    input:focus, select:focus { border-color: #111827; background: #fff; box-shadow: 0 0 0 3px rgba(17,24,39,0.06); }
+    .btn { padding: 0.65rem 1.4rem; background: #111827; color: #fff; border: none; border-radius: 9px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .btn:hover { background: #1f2937; }
+    .btn-danger { padding: 0.35rem 0.8rem; background: transparent; color: #dc2626; border: 1.5px solid #fecaca; border-radius: 7px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-danger:hover { background: #fef2f2; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    th { text-align: left; padding: 0.65rem 0.9rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #9ca3af; border-bottom: 1px solid #f3f4f6; }
+    td { padding: 0.75rem 0.9rem; border-bottom: 1px solid #f9fafb; color: #374151; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+    .role-badge { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .role-admin { background: #111827; color: #fff; }
+    .role-user  { background: #f3f4f6; color: #374151; }
+    .empty-row td { text-align: center; color: #9ca3af; padding: 2rem; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+
+    @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } .form-row, .form-row.three { grid-template-columns: 1fr; } }
+
+    /* ── AI Chat ── */
+    .ai-fab {
+      position: fixed; bottom: 2rem; right: 2rem;
+      width: 52px; height: 52px;
+      background: #111827; color: #fff;
+      border: none; border-radius: 50%;
+      cursor: pointer; z-index: 999;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .ai-fab:hover { background: #1f2937; transform: scale(1.08); }
+    .ai-panel {
+      position: fixed; bottom: 5.5rem; right: 2rem;
+      width: 360px; max-height: 520px;
+      background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+      display: flex; flex-direction: column;
+      z-index: 998; overflow: hidden;
+      transform: scale(0.95) translateY(10px);
+      opacity: 0; pointer-events: none;
+      transition: all 0.2s ease;
+    }
+    .ai-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+    .ai-panel-header { padding: 1rem 1.2rem; background: #111827; color: #fff; display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 700; flex-shrink: 0; }
+    .ai-panel-header .ai-sub { font-size: 0.7rem; color: #6b7280; margin-left: auto; }
+    .ai-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .ai-msg { max-width: 88%; padding: 0.65rem 0.9rem; border-radius: 12px; font-size: 0.82rem; line-height: 1.5; white-space: pre-wrap; }
+    .ai-msg.user { background: #111827; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .ai-msg.bot  { background: #f3f4f6; color: #111827; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .ai-msg.thinking { background: #f9fafb; color: #9ca3af; font-style: italic; align-self: flex-start; }
+    .ai-input-row { padding: 0.8rem; border-top: 1px solid #f3f4f6; display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .ai-input-row input { flex: 1; padding: 0.6rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 9px; font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+    .ai-input-row input:focus { border-color: #111827; }
+    .ai-input-row button { padding: 0.6rem 1rem; background: #111827; color: #fff; border: none; border-radius: 9px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .ai-input-row button:hover { background: #1f2937; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    PersonMonitor
+  </a>
+  <div class="nav-right">
+    <a class="btn-link" href="/dashboard">Dashboard</a>
+    <span class="badge-admin">Admin</span>
+    <span style="font-size:0.85rem;color:#6b7280;">{{ user }}</span>
+    <a class="btn-link" href="/logout">Sign out</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-title">Admin Panel</div>
+  <div class="page-sub">Manage cameras, users, and monitor detection statistics</div>
+
+  {% if msg %}
+  <div class="toast">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#15803d"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    {{ msg }}
+  </div>
+  {% endif %}
+
+  <div class="stats-row">
+    <div class="stat"><label>Total Events</label><div class="val">{{ total }}</div></div>
+    <div class="stat"><label>Cameras</label><div class="val">{{ cams|length }}</div></div>
+    <div class="stat"><label>Users</label><div class="val">{{ users|length }}</div></div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem;">
+    <div class="card">
+      <div class="card-header">Add IP Camera</div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="add_cam"/>
+          <div class="form-row">
+            <div class="field">
+              <label class="lbl">Camera Name</label>
+              <input type="text" name="name" placeholder="e.g. Front Door" required/>
+            </div>
+            <div class="field">
+              <label class="lbl">Phone IP Address</label>
+              <input type="text" name="ip" placeholder="192.168.x.x" required/>
+              <span style="font-size:0.72rem;color:#9ca3af;margin-top:0.3rem;display:block;">Uses port 8080 (IP Webcam app)</span>
+            </div>
+          </div>
+          <button class="btn" type="submit">Add Camera</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Add User</div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="add_user"/>
+          <div class="form-row three">
+            <div class="field">
+              <label class="lbl">Username</label>
+              <input type="text" name="uname" placeholder="Username" required/>
+            </div>
+            <div class="field">
+              <label class="lbl">Password</label>
+              <input type="password" name="pw" placeholder="Password" required/>
+            </div>
+            <div class="field">
+              <label class="lbl">Role</label>
+              <select name="role">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn" type="submit">Add User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem;">
+    <div class="card">
+      <div class="card-header">Active Cameras</div>
+      <table>
+        <thead><tr><th>Name</th><th>URL</th><th></th></tr></thead>
+        <tbody>
+          {% for cam in cams %}
+          <tr>
+            <td><strong>{{ cam.name }}</strong></td>
+            <td style="color:#9ca3af;font-size:0.78rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cam.url }}</td>
+            <td>
+              <form method="POST" style="display:inline">
+                <input type="hidden" name="action" value="delete_cam"/>
+                <input type="hidden" name="cam_id" value="{{ cam.id }}"/>
+                <button class="btn-danger" type="submit">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr class="empty-row"><td colspan="3">No cameras added yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Users</div>
+      <table>
+        <thead><tr><th>Username</th><th>Role</th><th></th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td><strong>{{ u.username }}</strong></td>
+            <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
+            <td>
+              {% if u.username != 'admin' %}
+              <form method="POST" style="display:inline">
+                <input type="hidden" name="action" value="delete_user"/>
+                <input type="hidden" name="uid" value="{{ u.id }}"/>
+                <button class="btn-danger" type="submit">Delete</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Detection Statistics by Camera</div>
+    <table>
+      <thead><tr><th>Camera</th><th>Total Events</th><th>Last Detection</th></tr></thead>
+      <tbody>
+        {% for s in stats %}
+        <tr>
+          <td><strong>{{ s.cam_name }}</strong></td>
+          <td>{{ s.events }}</td>
+          <td style="color:#9ca3af;">{{ s.last }}</td>
+        </tr>
+        {% else %}
+        <tr class="empty-row"><td colspan="3">No detections recorded yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- AI Floating Button -->
+<button class="ai-fab" onclick="toggleAI()" title="Ask AI">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 11H7v-2h10v2zm0-3H7V8h10v2z"/></svg>
+</button>
+
+<!-- AI Chat Panel -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-panel-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    AI Assistant
+    <span class="ai-sub">admin access</span>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg bot">Hi {{ user }}! As admin, I have full access to cameras, users, and all detection statistics. Ask me anything!</div>
+  </div>
+  <div class="ai-input-row">
+    <input type="text" id="ai-input" placeholder="Ask about your system..." onkeydown="if(event.key==='Enter') sendAI()"/>
+    <button onclick="sendAI()">Send</button>
+  </div>
+</div>
+
+<script>
+  function toggleAI() {
+    document.getElementById("ai-panel").classList.toggle("open");
+  }
+
+  async function sendAI() {
+    const input = document.getElementById("ai-input");
+    const query = input.value.trim();
+    if (!query) return;
+    input.value = "";
+
+    const msgs = document.getElementById("ai-messages");
+    const userMsg = document.createElement("div");
+    userMsg.className = "ai-msg user";
+    userMsg.textContent = query;
+    msgs.appendChild(userMsg);
+
+    const thinking = document.createElement("div");
+    thinking.className = "ai-msg thinking";
+    thinking.textContent = "Thinking...";
+    msgs.appendChild(thinking);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    try {
+      const res = await fetch("/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      thinking.className = "ai-msg bot";
+      thinking.textContent = data.answer || data.error || "No response.";
+    } catch {
+      thinking.className = "ai-msg bot";
+      thinking.textContent = "Failed to reach AI. Please try again.";
+    }
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+</script>
+
+</body>
+</html>
