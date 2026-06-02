@@ -177,7 +177,13 @@
             <span class="cam-name">{{ cam.name }}</span>
             <span class="cam-count" id="count-{{ cam.id }}">0 objects</span>
           </div>
-          <img src="/video/{{ cam.id }}" alt="{{ cam.name }}"/>
+          <img src="/video/{{ cam.id }}" alt="{{ cam.name }}"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+          <div style="display:none; min-height:300px; align-items:center; justify-content:center; flex-direction:column; gap:0.5rem; color:#9ca3af; background:#f9fafb;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="#d1d5db"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+            <span style="font-size:0.85rem;">Camera not reachable</span>
+            <span style="font-size:0.75rem;">Check if camera is on same network</span>
+          </div>
           <div class="rec-controls">
             <button class="btn-rec" id="rec-{{ cam.id }}" onclick="toggleRecord({{ cam.id }})" title="Record">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>

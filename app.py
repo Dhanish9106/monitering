@@ -359,7 +359,11 @@ def video(cam_id):
             _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
             yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
                    + buf.tobytes() + b"\r\n")
-    return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    resp = Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["X-Accel-Buffering"] = "no"  # disables nginx buffering on Render
+    return resp
 
 
 # ── Recording ─────────────────────────────────────────────────────────────────
