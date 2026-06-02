@@ -10,8 +10,12 @@ from collections import deque
 from dotenv import load_dotenv
 from flask import (Flask, Response, render_template, request, redirect,
                    url_for, session, jsonify, stream_with_context, send_file)
+import torch
 from ultralytics import YOLO
 import google.generativeai as genai
+
+# Fix for PyTorch 2.6+ weights_only security
+torch.serialization.add_safe_globals(["ultralytics.nn.tasks.DetectionModel"])
 
 load_dotenv()
 genai.configure(api_key=os.getenv("gemini_key"))
@@ -656,4 +660,5 @@ def events():
 if __name__ == "__main__":
     init_db()
     load_cameras_from_db()
-    app.run(debug=False, threaded=True, host="0.0.0.0", port=5000)
+    port = int(os.getenv("PORT", 5000))
+    app.run(debug=False, threaded=True, host="0.0.0.0", port=port)
